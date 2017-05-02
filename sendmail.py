@@ -1,157 +1,161 @@
 # Import smtplib to provide email functions
+"""This file deals with mail management"""
+
 import smtplib
 import zipfile
-
+from email.mime.application import MIMEApplication
 # Import the email modules
 from email.mime.multipart import MIMEMultipart
 from email.mime.text import MIMEText
-from email.mime.application import MIMEApplication
 
-import mylib as ml #user-defined
+import mylib as ml  # user-defined
 
-config = ml.read_config()
+CONFIG = ml.read_config()
 
-name = 'sendmail'
-logfile = 'mail'
-logger = ml.init_logging(name,logfile)
-
+NAME = 'sendmail'
+LOG_FILE = 'mail'
+LOGGER = ml.init_logging(NAME, LOG_FILE)
 
 
 try:
-  	      
-  # Define SMTP email server details
-  smtp_server = config.get("SMTP", "smtp_server")
-  smtp_port   = int(config.get("SMTP", "smtp_port"))
 
+    # Define SMTP email server details
+    SMTP_SERVER = CONFIG.get("SMTP", "smtp_server")
+    SMTP_PORT = int(CONFIG.get("SMTP", "smtp_port"))
 
-  # Define User details
-  UserId = config.get("UserDetails", "UserId")
-  FullName = config.get("UserDetails", "FullName")
-  EmailId = config.get("UserDetails", "EmailId")
-  ContactNo = config.get("UserDetails", "ContactNo")
+    # Define User details
+    USER_ID = CONFIG.get("UserDetails", "UserId")
+    FULL_NAME = CONFIG.get("UserDetails", "FullName")
+    EMAIL_ID = CONFIG.get("UserDetails", "EmailId")
+    CONTACT_NO = CONFIG.get("UserDetails", "ContactNo")
 
-  # Define Zip details
-  z_directory = '/var/www/logs/'
-  z_extractpath = '/var/www/zip/'  
-  z_filename = UserId +'_logs.zip'
+    # Define Zip details
+    Z_DIRECTORY = '/var/www/logs/'
+    Z_EXTRACT_PATH = '/var/www/zip/'
+    Z_FILE_NAME = USER_ID + '_logs.zip'
 
-  # Define email addresses to use
-  to_Addr = config.get("SMTP", "to_Addr")
+    # Define email addresses to use
+    TO_ADDRESS = CONFIG.get("SMTP", "to_Addr")
 
-  from_Addr = config.get("SMTP", "from_Addr")
-  from_Pass = config.get("SMTP", "from_Pass")
+    FROM_ADDRESS = CONFIG.get("SMTP", "from_Addr")
+    FROM_PASSWORD = CONFIG.get("SMTP", "from_Pass")
 
-  msg_Sub = config.get("SMTP", "msg_Sub") 
-  
-  config = ' SMTP Details > Server: ' + str(smtp_server) + ' Port:' + str(smtp_port) + ' 	Mail Details > To: ' + str(to_Addr)+ ' From:	' + str(from_Addr) + ' Sub:	' + str(msg_Sub)
-  logger.warning('sendmail has started with config. >> ' + config)
-	
-  # Construct email
-  msg = MIMEMultipart('alternative')
-  msg['To'] = to_Addr
-  msg['From'] = from_Addr
-  msg['Subject'] = msg_Sub + " : " + FullName
-  
-  #read database            
-  logger.info('checkfeedback')
-  #######################Query to check whether a record exists in table#######################
-  checkfeedback = "select count(*) from feedback WHERE issend=0;"
-  logger.debug(checkfeedback)
-  count = ml.db_fetchone(checkfeedback)
-  logger.info('executed')  
-  logger.debug('count >> ' + str(count))
-  #######################Query to check whether a record exists in table#######################
+    MSG_SUBJECT = CONFIG.get("SMTP", "msg_Sub")
 
-  if count!=0: #records exists go with updation
-     logger.info('*-*Records Found*-*')
+    CONFIG = ' SMTP Details > Server: ' + str(SMTP_SERVER) + ' Port:' + str(
+        SMTP_PORT) + ' 	Mail Details > To: ' + str(TO_ADDRESS) + ' From:	' + str(FROM_ADDRESS) + ' Sub:	' + str(MSG_SUBJECT)
+    LOGGER.warning('sendmail has started with CONFIG. >> ' + CONFIG)
 
-     logger.info('getfeedback')
-     getfeedback = "select * from feedback WHERE issend=0 ORDER BY inserted_date asc;"
-     logger.debug(getfeedback)
-     cursor = ml.db_fetchall(getfeedback)
-     logger.info('executed') 
+    # Construct email
+    MSG = MIMEMultipart('alternative')
+    MSG['To'] = TO_ADDRESS
+    MSG['From'] = FROM_ADDRESS
+    MSG['Subject'] = MSG_SUBJECT + " : " + FULL_NAME
 
-     attachcount = 0
-     for row in cursor:          
-          message = row[0]
-          isattach = row[1]
-          time = row[2]
-          
-          logger.info('Email Body') 
-          logger.debug('message >> ' + message)          
-          logger.debug('isattach >> ' + str(isattach))
+    # read database
+    LOGGER.info('CHECK_FEEDBACK')
+    #######################Query to check whether a record exists in table####
+    CHECK_FEEDBACK = "select COUNT(*) from feedback WHERE issend=0;"
+    LOGGER.debug(CHECK_FEEDBACK)
+    COUNT = ml.db_fetchone(CHECK_FEEDBACK)
+    LOGGER.info('executed')
+    LOGGER.debug('COUNT >> ' + str(COUNT))
+    #######################Query to check whether a record exists in table####
 
-          
-          if isattach==1:
-            attachcount = attachcount + 1                  
-          
-          if attachcount==1:
-            config = ' Directory: ' + z_directory + ' Extract Path: ' + z_extractpath + ' File Name: '  + z_filename            
-            logger.warning('Create Zip Only Once with config. >> ' + config)
+    if COUNT != 0:  # records exists go with updation
+        LOGGER.info('*-*Records Found*-*')
 
-            # Zip Section
-            zipf = zipfile.ZipFile(z_extractpath + z_filename, 'w', zipfile.ZIP_DEFLATED)
-            ml.zipdir(z_directory, zipf)
-            zipf.close()            
-            dirsize = ml.get_dirsize(z_directory)
-            logger.debug('Actual Directory Size : ' + str(dirsize))                        
-            zipsize = ml.get_filesize(z_extractpath,z_filename)
-            logger.debug('Compressed Size : ' + str(zipsize))            
-            logger.info('executed')                        
-            # Zip Section
-            
-          html = """\
+        LOGGER.info('GET_FEEDBACK')
+        GET_FEEDBACK = "select * from feedback WHERE issend=0 ORDER BY inserted_date asc;"
+        LOGGER.debug(GET_FEEDBACK)
+        CURSOR = ml.db_fetchall(GET_FEEDBACK)
+        LOGGER.info('executed')
+
+        ATTACH_COUNT = 0
+        for row in CURSOR:
+            message = row[0]
+            isattach = row[1]
+            time = row[2]
+
+            LOGGER.info('Email Body')
+            LOGGER.debug('message >> ' + message)
+            LOGGER.debug('isattach >> ' + str(isattach))
+
+            if isattach == 1:
+                ATTACH_COUNT = ATTACH_COUNT + 1
+
+            if ATTACH_COUNT == 1:
+                CONFIG = ' Directory: ' + Z_DIRECTORY + ' Extract Path: ' + \
+                    Z_EXTRACT_PATH + ' File Name: ' + Z_FILE_NAME
+                LOGGER.warning(
+                    'Create Zip Only Once with CONFIG. >> ' + CONFIG)
+
+                # Zip Section
+                zipf = zipfile.ZipFile(
+                    Z_EXTRACT_PATH + Z_FILE_NAME, 'w', zipfile.ZIP_DEFLATED)
+                ml.zipdir(Z_DIRECTORY, zipf)
+                zipf.close()
+                dirsize = ml.get_dirsize(Z_DIRECTORY)
+                LOGGER.debug('Actual Directory Size : ' + str(dirsize))
+                zipsize = ml.get_filesize(Z_EXTRACT_PATH, Z_FILE_NAME)
+                LOGGER.debug('Compressed Size : ' + str(zipsize))
+                LOGGER.info('executed')
+                # Zip Section
+
+            html = """\
           <html>
                     <head></head>
                     <body>
                                     <p>Hello!</p> 
-                                    <p>"""+message+"""</p>
-                                    <p>Regards,<br>"""+FullName+""" | Beymax User <br>UserId : <b> """+UserId+"""</b><br>Contact : <a href="tel:"""+ContactNo+"""">"""+ContactNo+"""</a> <br>Email : <a href="""+EmailId+""">"""+EmailId+"""</a></p>                  
+                                    <p>""" + message + """</p>
+                                    <p>Regards,<br>""" + FULL_NAME + """ | Beymax User <br>UserId : <b> """ + USER_ID + """</b><br>Contact : <a href="tel:""" + CONTACT_NO + """">""" + CONTACT_NO + """</a> <br>Email : <a href=""" + EMAIL_ID + """>""" + EMAIL_ID + """</a></p>                  
                     </body>
           </html>
           """
-          #print (html)
-          
-          # Record the MIME types of both parts - text/plain and text/html.
-          part = MIMEText(html, 'html')
+            #print (html)
 
-          # Attach parts into message container.
-          # According to RFC 2046, the last part of a multipart message, in this case
-          # the HTML message, is best and preferred.
+            # Record the MIME types of both parts - text/plain and text/html.
+            part = MIMEText(html, 'html')
 
-          msg.attach(part)
+            # Attach parts into message container.
+            # According to RFC 2046, the last part of a multipart message, in this case
+            # the HTML message, is best and preferred.
 
-          if isattach==1:
-            # This is the binary part(The Attachment):
-            part = MIMEApplication(open(z_extractpath + z_filename,"rb").read())
-            part.add_header('Content-Disposition', 'attachment', filename=z_filename)
-            msg.attach(part)
+            MSG.attach(part)
 
-          server=smtplib.SMTP(smtp_server, smtp_port)
-          server.starttls()
+            if isattach == 1:
+                # This is the binary part(The Attachment):
+                part = MIMEApplication(
+                    open(Z_EXTRACT_PATH + Z_FILE_NAME, "rb").read())
+                part.add_header('Content-Disposition',
+                                'attachment', filename=Z_FILE_NAME)
+                MSG.attach(part)
 
-          server.login(from_Addr, from_Pass)
-          server.sendmail(from_Addr, to_Addr, msg.as_string())
+            server = smtplib.SMTP(SMTP_SERVER, SMTP_PORT)
+            server.starttls()
 
-          
-          print ('Email sent!')
-          logger.info('Email sent!')
+            server.login(FROM_ADDRESS, FROM_PASSWORD)
+            server.sendmail(FROM_ADDRESS, TO_ADDRESS, MSG.as_string())
 
-          logger.info('updatefeedback')        
-          updatefeedback = "update feedback set "  ;
-          updatefeedback  =  updatefeedback + "issend=1 , send_date = datetime('now', 'localtime') WHERE ";
-          updatefeedback  =  updatefeedback + "message='"+  message +"' ;";
-          logger.debug(updatefeedback)                                        
-          ml.db_execquery(updatefeedback)
-          logger.info('executed')
-          #######################Update Query#######################
+            print 'Email sent!'
+            LOGGER.info('Email sent!')
 
-     logger.info('**AttachCount**')    
-     logger.debug('attachcount >> ' + str(attachcount))
-  else:
-     logger.info('No Records found!')
+            LOGGER.info('updatefeedback')
+            updatefeedback = "update feedback set "
+            updatefeedback = updatefeedback + \
+                "issend=1 , send_date = datetime('now', 'localtime') WHERE "
+            updatefeedback = updatefeedback + "message='" + message + "' ;"
+            LOGGER.debug(updatefeedback)
+            ml.db_execquery(updatefeedback)
+            LOGGER.info('executed')
+            #######################Update Query#######################
 
-  logger.warning('sendmail has stopped << ')
-except:  
-  logger.exception("got error")
-  logger.critical('senmail has stopped unexpectedly!!! <<')
+        LOGGER.info('**AttachCount**')
+        LOGGER.debug('ATTACH_COUNT >> ' + str(ATTACH_COUNT))
+    else:
+        LOGGER.info('No Records found!')
+
+    LOGGER.warning('sendmail has stopped << ')
+except:
+    LOGGER.exception("got error")
+    LOGGER.critical('senmail has stopped unexpectedly!!! <<')

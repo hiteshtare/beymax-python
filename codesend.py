@@ -1,145 +1,152 @@
 #!/usr/bin/env python
+"""This file deals with sending code through RF"""
 
-import time
-import pigpio
-import vw
 import sys
+import time
 import traceback
 
-import mylib as ml #user-defined
+import mylib as ml  # user-defined
+import pigpio
+import vw
 
-config = ml.read_config()
+CONFIG = ml.read_config()
 
-name = 'codesend'
-logfile = 'debug'
-logger = ml.init_logging(name,logfile)
-  
+NAME = 'codesend'
+LOGFILE = 'debug'
+LOGGER = ml.init_logging(NAME, LOGFILE)
+
 try:
-		
-  TX=int(config.get("vw", "TX_Code"))
-  BPS=int(config.get("vw", "BPS"))
 
-  pi = pigpio.pi() # Connect to local Pi.
+    TX = int(CONFIG.get("vw", "TX_Code"))
+    BPS = int(CONFIG.get("vw", "BPS"))
 
-  tx = vw.tx(pi, TX, BPS) # Specify Pi, tx GPIO, and baud.
-  
-  config = ' TX:' + str(TX) + ' BPS:' + str(BPS)
-  logger.warning('codesend has started with config. >> ' + config)
+    PI = pigpio.pi()  # Connect to local Pi.
 
-  while tx.ready():
-   
-   #tx.put("{:s}".format(sys.argv[1]))
-   
-   rvalue = "{:s}".format(sys.argv[1])   
-   
-   rvalue_len = len(rvalue)
-   
-   #print(rvalue)
-   logger.debug('rvalue : ' + rvalue + ' length : ' + str(rvalue_len))
-	 
-   if rvalue_len==10: #Code recieved from web (Valid)
-   
-       #Extraction of Details from Code
-       user_id = (rvalue[0:3])
-       str_room_no = (rvalue[3:5])
-       room_no = str(int((rvalue[3:5])))
-       d_type = (rvalue[5:7])
-       no = (rvalue[7:8])      
-       status_code = (rvalue[8:10])    
-       #Extraction of Details from Code  
-       
-       details = 'user_id:' + user_id + ' room_no:' + room_no + ' d_type:' + d_type + ' no:' + no + ' status_code:' + status_code 
-       logger.debug('details >> ' + details)
-			 
-       if status_code != "99": #To avoid code that is triggered by rpi
-            
-           logger.info('devicecheck')
-	   #######################Query to check whether a record exists in table#######################
-           devicecheck = "SELECT EXISTS (select * from revoke WHERE "  ;
-           devicecheck  =  devicecheck + "deviceid="+  user_id + str_room_no + d_type + no +" );"
-           logger.debug(devicecheck)
-					 
-           count = ml.db_fetchone(devicecheck)
-           logger.info('executed')
-           logger.debug('count >> ' + str(count))
-           #######################Query to check whether a record exists in table#######################
-           if count==1:
-             #######################Query to check whether a record exists in table#######################
-             logger.info('revokcheck')
-             revokcheck = "SELECT EXISTS (select * from revoke WHERE "  ;
-             revokcheck  =  revokcheck + "deviceid="+  user_id + str_room_no + d_type + no +" AND ischeck=1 );";           
-             logger.debug(revokcheck)
-                                           
-             count = ml.db_fetchone(revokcheck)
-             logger.info('executed')
-             logger.debug('count >> ' + str(count))                                           
-             #######################Query to check whether a record exists in table#######################
-           
-             if count==1: #record already exists go with updation             
-               logger.info('true')
-             else:
-               logger.info('false')
-               break; 
+    TX = vw.tx(PI, TX, BPS)  # Specify Pi, TX GPIO, and baud.
 
-           tx.put("{:s}".format(sys.argv[1])) #forward to RFSniffer
-           logger.info('checksql')
-	   #######################Query to check whether a record exists in table#######################
-           checksql = "SELECT EXISTS (select * from devicestat WHERE "  ;
-           checksql  =  checksql + "userid="+  user_id +" AND room=" + room_no +" AND type=" + d_type +" AND no="+ no +");";           
-           logger.debug(checksql)
-					 
-           count = ml.db_fetchone(checksql)
-           logger.info('executed')
-           logger.debug('count >> ' + str(count))
-					 
-           #######################Query to check whether a record exists in table#######################
-         
-           if count==1: #record already exists go with updation             
-             logger.info('updatesql')
-						 
-             #######################Update Query#######################
-             updatesql = "update devicestat set "  ;
-             updatesql  =  updatesql + "status ="+  status_code + " , updated_date = datetime('now', 'localtime') , ack = 0  WHERE ";
-             updatesql  =  updatesql + "userid="+  user_id +" AND room=" + room_no +" AND type=" + d_type +" AND no="+ no +";";
-             logger.debug(updatesql)
-             
-             ml.db_execquery(updatesql)
-             logger.info('executed')
-             #######################Update Query#######################
-          
-           else: #record does not exists go with insertion              
-              logger.info('insertsql')
-							
-              #######################Insert Query#######################
-              insertsql = "insert into devicestat (userid, room, type, no, status,updated_date) values ("  ;
-              insertsql  =  insertsql + user_id +"," + room_no +"," + d_type +"," + no +"," + status_code +",datetime('now', 'localtime'));";
-              logger.debug(insertsql)
-              
-              ml.db_execquery(insertsql)
-              logger.info('executed')
-              #######################Insert Query#######################
-       else:               
-               logger.info('trigger update from rpi')
-               tx.put("{:s}".format(sys.argv[1])) #forward to RFSniffer
-							 
-   elif len(rvalue)==11 : # Code is Recieved from rpi      
-      logger.info('Recieved from RPI')
-      tx.put("{:s}".format(sys.argv[1])) #forward to RFSniffer
-   else: # Code is Invalid      
-      logger.info('Invalid Code Length!')
-      tx.put("{:s}".format(sys.argv[1])) #forward to RFSniffer
-      
-   
-  while not tx.ready():
-   time.sleep(0.02)
-   
-  tx.cancel() # Cancel Virtual Wire transmitter.
+    CONFIG = ' TX:' + str(TX) + ' BPS:' + str(BPS)
+    LOGGER.warning('codesend has started with CONFIG. >> ' + CONFIG)
 
-  pi.stop()
-  
-  logger.warning('codesend has stopped <<')
+    while TX.ready():
+
+        # TX.put("{:s}".format(sys.argv[1]))
+
+        R_VALUE = "{:s}".format(sys.argv[1])
+
+        R_VALUE_LEN = len(R_VALUE)
+
+        # print(R_VALUE)
+        LOGGER.debug('R_VALUE : ' + R_VALUE + ' length : ' + str(R_VALUE_LEN))
+
+        if R_VALUE_LEN == 10:  # Code recieved from web (Valid)
+
+            # Extraction of Details from Code
+            USER_ID = (R_VALUE[0:3])
+            STR_ROOM_NO = (R_VALUE[3:5])
+            ROOM_NO = str(int((R_VALUE[3:5])))
+            D_TYPE = (R_VALUE[5:7])
+            NO = (R_VALUE[7:8])
+            STATUS_CODE = (R_VALUE[8:10])
+            # Extraction of Details from Code
+
+            DETAILS = 'USER_ID:' + USER_ID + ' ROOM_NO:' + ROOM_NO + \
+                ' D_TYPE:' + D_TYPE + ' NO:' + NO + ' STATUS_CODE:' + STATUS_CODE
+            LOGGER.debug('DETAILS >> ' + DETAILS)
+
+            if STATUS_CODE != "99":  # To avoid code that is triggered by rpi
+
+                LOGGER.info('DEVICE_CHECK')
+                # Query to check whether a record exists i
+                DEVICE_CHECK = "SELECT EXISTS (select * from revoke WHERE "
+                DEVICE_CHECK = DEVICE_CHECK + "deviceid=" + \
+                    USER_ID + STR_ROOM_NO + D_TYPE + NO + " );"
+                LOGGER.debug(DEVICE_CHECK)
+
+                COUNT = ml.db_fetchone(DEVICE_CHECK)
+                LOGGER.info('executed')
+                LOGGER.debug('COUNT >> ' + str(COUNT))
+                # Query to check whether a record exists i
+                if COUNT == 1:
+                    # Query to check whether a record exis
+                    LOGGER.info('REVOKE_CHECK')
+                    REVOKE_CHECK = "SELECT EXISTS (select * from revoke WHERE "
+                    REVOKE_CHECK = REVOKE_CHECK + "deviceid=" + USER_ID + \
+                        STR_ROOM_NO + D_TYPE + NO + " AND ischeck=1 );"
+                    LOGGER.debug(REVOKE_CHECK)
+
+                    COUNT = ml.db_fetchone(REVOKE_CHECK)
+                    LOGGER.info('executed')
+                    LOGGER.debug('COUNT >> ' + str(COUNT))
+                    # Query to check whether a record exis
+
+                    if COUNT == 1:  # record already exists go with updation
+                        LOGGER.info('true')
+                    else:
+                        LOGGER.info('false')
+                        break
+
+                TX.put("{:s}".format(sys.argv[1]))  # forward to RFSniffer
+                LOGGER.info('CHECK_SQL')
+                # Query to check whether a record exists i
+                CHECK_SQL = "SELECT EXISTS (select * from devicestat WHERE "
+                CHECK_SQL = CHECK_SQL + "userid=" + USER_ID + " AND room=" + \
+                    ROOM_NO + " AND type=" + D_TYPE + " AND NO=" + NO + ");"
+                LOGGER.debug(CHECK_SQL)
+
+                COUNT = ml.db_fetchone(CHECK_SQL)
+                LOGGER.info('executed')
+                LOGGER.debug('COUNT >> ' + str(COUNT))
+
+                # Query to check whether a record exists i
+
+                if COUNT == 1:  # record already exists go with updation
+                    LOGGER.info('UPDATE_SQL')
+
+                    #######################Update Query#######################
+                    UPDATE_SQL = "update devicestat set "
+                    UPDATE_SQL = UPDATE_SQL + "status =" + STATUS_CODE + \
+                        " , updated_date = datetime('NOw', 'localtime') , ack = 0  WHERE "
+                    UPDATE_SQL = UPDATE_SQL + "userid=" + USER_ID + " AND room=" + \
+                        ROOM_NO + " AND type=" + D_TYPE + " AND NO=" + NO + ";"
+                    LOGGER.debug(UPDATE_SQL)
+
+                    ml.db_execquery(UPDATE_SQL)
+                    LOGGER.info('executed')
+                    #######################Update Query#######################
+
+                else:  # record does NOt exists go with insertion
+                    LOGGER.info('INSERT_SQL')
+
+                    #######################Insert Query#######################
+                    INSERT_SQL = "insert into devicestat (userid, room, type, NO, status,updated_date) values ("
+                    INSERT_SQL = INSERT_SQL + USER_ID + "," + ROOM_NO + "," + D_TYPE + \
+                        "," + NO + "," + STATUS_CODE + \
+                        ",datetime('NOw', 'localtime'));"
+                    LOGGER.debug(INSERT_SQL)
+
+                    ml.db_execquery(INSERT_SQL)
+                    LOGGER.info('executed')
+                    #######################Insert Query#######################
+            else:
+                LOGGER.info('trigger update from rpi')
+                TX.put("{:s}".format(sys.argv[1]))  # forward to RFSniffer
+
+        elif len(R_VALUE) == 11:  # Code is Recieved from rpi
+            LOGGER.info('Recieved from RPI')
+            TX.put("{:s}".format(sys.argv[1]))  # forward to RFSniffer
+        else:  # Code is Invalid
+            LOGGER.info('Invalid Code Length!')
+            TX.put("{:s}".format(sys.argv[1]))  # forward to RFSniffer
+
+    while not TX.ready():
+        time.sleep(0.02)
+
+    TX.cancel()  # Cancel Virtual Wire transmitter.
+
+    PI.stop()
+
+    LOGGER.warning('codesend has stopped <<')
 
 except:
-    logger.exception("got error")
-    logger.critical('codesend has stopped unexpectedly!!! <<')    
-
+    LOGGER.exception("got error")
+    LOGGER.critical('codesend has stopped unexpectedly!!! <<')
