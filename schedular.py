@@ -42,7 +42,7 @@ try:
 
         LOGGER.info('checkjob')
         #######################Query to check whether a record exists in table#
-        checkjob = "SELECT EXISTS (select * from schedular WHERE "
+        checkjob = "SELECT EXISTS (SELECT * from schedular WHERE "
         checkjob = checkjob + "comment='" + p_comment + "' AND isdeleted = 0);"
         LOGGER.debug(checkjob)
 
@@ -81,7 +81,7 @@ try:
 
             LOGGER.info('insertjob')
             #######################Insert Query#######################
-            insertjob = "insert into schedular (room, type, no, status, command, comment, timeslice, frequency, prev_schedule, next_schedule, inserted_date, updated_date) values ("
+            insertjob = "INSERT INTO schedular (room, type, no, status, command, comment, timeslice, frequency, prev_schedule, next_schedule, inserted_date, updated_date) VALUES ("
             insertjob = insertjob + "'" + room + "','" + type + "','" + number + "','" + status + "','" + p_command + "','" + p_comment + "','" + p_timeslice + \
                 "','" + str(freq) + "','" + str(prev_sche) + "','" + str(next_sche) + \
                 "',datetime('now', 'localtime'),datetime('now', 'localtime'));"
@@ -112,7 +112,7 @@ try:
 
         LOGGER.info('checkjob')
         #######################Query to check whether a record exists in table#
-        checkjob = "SELECT EXISTS (select * from schedular WHERE "
+        checkjob = "SELECT EXISTS (SELECT * FROM schedular WHERE "
         checkjob = checkjob + "comment='" + p_comment + \
             "' AND isactive = 0 AND isdeleted = 0);"
         LOGGER.debug(checkjob)
@@ -136,7 +136,7 @@ try:
 
                 LOGGER.info('enablejob')
                 #######################Update Query#######################
-                enablejob = "update schedular set "
+                enablejob = "UPDATE schedular SET "
                 enablejob = enablejob + "timeslice = '" + p_timeslice + "' , frequency = " + str(freq) + " , prev_schedule = '" + str(
                     prev_sche) + "' , next_schedule = '" + str(next_sche) + "' , isactive = 1,updated_date = datetime('now', 'localtime') WHERE "
                 enablejob = enablejob + "comment='" + p_comment + "' AND isdeleted = 0;"
@@ -161,7 +161,7 @@ try:
         else:
             LOGGER.info('checkjob_enab')
             # Query to check whether a record exists in ta
-            checkjob_enab = "SELECT EXISTS (select * from schedular WHERE "
+            checkjob_enab = "SELECT EXISTS (SELECT * FROM schedular WHERE "
             checkjob_enab = checkjob_enab + "comment='" + \
                 p_comment + "' AND isactive = 1 AND isdeleted = 0);"
             LOGGER.debug(checkjob_enab)
@@ -184,7 +184,7 @@ try:
 
                     LOGGER.info('updateschedule')
                     #######################Update Query#######################
-                    updateschedule = "update schedular set "
+                    updateschedule = "UPDATE schedular SET "
                     updateschedule = updateschedule + "timeslice = '" + p_timeslice + "' , frequency = " + str(freq) + " , prev_schedule = '" + str(
                         prev_sche) + "' , next_schedule = '" + str(next_sche) + "' , updated_date = datetime('now', 'localtime') WHERE "
                     updateschedule = updateschedule + "comment='" + p_comment + "' AND isdeleted = 0;"
@@ -218,7 +218,7 @@ try:
 
         LOGGER.info('checkjob')
         #######################Query to check whether a record exists in table#
-        checkjob = "SELECT EXISTS (select * from schedular WHERE "
+        checkjob = "SELECT EXISTS (SELECT * FROM schedular WHERE "
         checkjob = checkjob + "comment='" + p_comment + \
             "' AND isactive = 1 AND isdeleted = 0);"
         LOGGER.debug(checkjob)
@@ -242,7 +242,7 @@ try:
 
                 LOGGER.info('disablejob')
                 #######################Update Query#######################
-                disablejob = "update schedular set "
+                disablejob = "UPDATE schedular SET "
                 disablejob = disablejob + "timeslice = '" + p_timeslice + "' , frequency = " + str(freq) + " , prev_schedule = '" + str(
                     prev_sche) + "' , next_schedule = '" + str(next_sche) + "' , isactive = 0,updated_date = datetime('now', 'localtime') WHERE "
                 disablejob = disablejob + "comment='" + p_comment + "' AND isdeleted = 0;"
@@ -266,7 +266,7 @@ try:
         else:
             LOGGER.info('checkjob_dis')
             # Query to check whether a record exists in ta
-            checkjob_dis = "SELECT EXISTS (select * from schedular WHERE "
+            checkjob_dis = "SELECT EXISTS (SELECT * FROM schedular WHERE "
             checkjob_dis = checkjob_dis + "comment='" + \
                 p_comment + "' AND isactive = 0 AND isdeleted = 0);"
             LOGGER.debug(checkjob_dis)
@@ -289,7 +289,7 @@ try:
 
                     LOGGER.info('updateschedule')
                     #######################Update Query#######################
-                    updateschedule = "update schedular set "
+                    updateschedule = "UPDATE schedular SET "
                     updateschedule = updateschedule + "timeslice = '" + p_timeslice + "' , frequency = " + str(freq) + " , prev_schedule = '" + str(
                         prev_sche) + "' , next_schedule = '" + str(next_sche) + "' , updated_date = datetime('now', 'localtime') WHERE "
                     updateschedule = updateschedule + "comment='" + p_comment + "' AND isdeleted = 0;"
@@ -332,7 +332,7 @@ try:
 
         LOGGER.info('checkjob')
         #######################Query to check whether a record exists in table#
-        checkjob = "SELECT EXISTS (select * from schedular WHERE "
+        checkjob = "SELECT EXISTS (SELECT * FROM schedular WHERE "
         checkjob = checkjob + "comment='" + p_comment + "' AND isdeleted = 0);"
         LOGGER.debug(checkjob)
 
@@ -351,7 +351,7 @@ try:
 
                     LOGGER.info('removejob')
                     #######################Update Query#######################
-                    removejob = "update schedular set "
+                    removejob = "UPDATE schedular SET "
                     removejob = removejob + \
                         "isdeleted = 1,updated_date = datetime('now', 'localtime') WHERE "
                     removejob = removejob + "comment='" + p_comment + "';"
@@ -399,7 +399,7 @@ try:
 
             LOGGER.info('updateschedule')
             #######################Update Query#######################
-            updateschedule = "update schedular set "
+            updateschedule = "UPDATE schedular SET "
             updateschedule = updateschedule + "prev_schedule = '" + \
                 str(prev_sche) + "',next_schedule  = '" + \
                 str(next_sche) + "' WHERE "
@@ -448,7 +448,7 @@ try:
 
         LOGGER.info('removealljob')
         #######################Update Query#######################
-        removealljob = "update schedular set "
+        removealljob = "UPDATE schedular SET "
         removealljob = removealljob + \
             "isdeleted = 1,updated_date = datetime('now', 'localtime');"
         LOGGER.debug(removealljob)

@@ -55,7 +55,7 @@ try:
     # read database
     LOGGER.info('CHECK_FEEDBACK')
     #######################Query to check whether a record exists in table####
-    CHECK_FEEDBACK = "select COUNT(*) from feedback WHERE issend=0;"
+    CHECK_FEEDBACK = "SELECT COUNT(*) FROM feedback WHERE issend=0;"
     LOGGER.debug(CHECK_FEEDBACK)
     COUNT = ml.db_fetchone(CHECK_FEEDBACK)
     LOGGER.info('executed')
@@ -66,7 +66,7 @@ try:
         LOGGER.info('*-*Records Found*-*')
 
         LOGGER.info('GET_FEEDBACK')
-        GET_FEEDBACK = "select * from feedback WHERE issend=0 ORDER BY inserted_date asc;"
+        GET_FEEDBACK = "SELECT * FROM feedback WHERE issend=0 ORDER BY inserted_date asc;"
         LOGGER.debug(GET_FEEDBACK)
         CURSOR = ml.db_fetchall(GET_FEEDBACK)
         LOGGER.info('executed')
@@ -141,7 +141,7 @@ try:
             LOGGER.info('Email sent!')
 
             LOGGER.info('updatefeedback')
-            updatefeedback = "update feedback set "
+            updatefeedback = "UPDATE feedback SET "
             updatefeedback = updatefeedback + \
                 "issend=1 , send_date = datetime('now', 'localtime') WHERE "
             updatefeedback = updatefeedback + "message='" + message + "' ;"

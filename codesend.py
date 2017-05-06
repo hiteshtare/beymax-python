@@ -57,7 +57,7 @@ try:
 
                 LOGGER.info('DEVICE_CHECK')
                 # Query to check whether a record exists i
-                DEVICE_CHECK = "SELECT EXISTS (select * from revoke WHERE "
+                DEVICE_CHECK = "SELECT EXISTS (SELECT * FROM revoke WHERE "
                 DEVICE_CHECK = DEVICE_CHECK + "deviceid=" + \
                     USER_ID + STR_ROOM_NO + D_TYPE + NO + " );"
                 LOGGER.debug(DEVICE_CHECK)
@@ -69,7 +69,7 @@ try:
                 if COUNT == 1:
                     # Query to check whether a record exis
                     LOGGER.info('REVOKE_CHECK')
-                    REVOKE_CHECK = "SELECT EXISTS (select * from revoke WHERE "
+                    REVOKE_CHECK = "SELECT EXISTS (SELECT * FROM revoke WHERE "
                     REVOKE_CHECK = REVOKE_CHECK + "deviceid=" + USER_ID + \
                         STR_ROOM_NO + D_TYPE + NO + " AND ischeck=1 );"
                     LOGGER.debug(REVOKE_CHECK)
@@ -88,7 +88,7 @@ try:
                 TX.put("{:s}".format(sys.argv[1]))  # forward to RFSniffer
                 LOGGER.info('CHECK_SQL')
                 # Query to check whether a record exists i
-                CHECK_SQL = "SELECT EXISTS (select * from devicestat WHERE "
+                CHECK_SQL = "SELECT EXISTS (SELECT * FROM devicestat WHERE "
                 CHECK_SQL = CHECK_SQL + "userid=" + USER_ID + " AND room=" + \
                     ROOM_NO + " AND type=" + D_TYPE + " AND NO=" + NO + ");"
                 LOGGER.debug(CHECK_SQL)
@@ -103,7 +103,7 @@ try:
                     LOGGER.info('UPDATE_SQL')
 
                     #######################Update Query#######################
-                    UPDATE_SQL = "update devicestat set "
+                    UPDATE_SQL = "UPDATE devicestat SET "
                     UPDATE_SQL = UPDATE_SQL + "status =" + STATUS_CODE + \
                         " , updated_date = datetime('NOw', 'localtime') , ack = 0  WHERE "
                     UPDATE_SQL = UPDATE_SQL + "userid=" + USER_ID + " AND room=" + \
@@ -118,7 +118,7 @@ try:
                     LOGGER.info('INSERT_SQL')
 
                     #######################Insert Query#######################
-                    INSERT_SQL = "insert into devicestat (userid, room, type, NO, status,updated_date) values ("
+                    INSERT_SQL = "INSERT INTO devicestat (userid, room, type, NO, status,updated_date) VALUES ("
                     INSERT_SQL = INSERT_SQL + USER_ID + "," + ROOM_NO + "," + D_TYPE + \
                         "," + NO + "," + STATUS_CODE + \
                         ",datetime('NOw', 'localtime'));"

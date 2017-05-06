@@ -1,5 +1,5 @@
 #!/usr/bin/env python
-"""This file deals with mail management"""
+"""This file sniffs code send through RF"""
 
 import os
 import subprocess
@@ -45,6 +45,15 @@ try:
     LOGGER.warning('RFSniffer has started with CONFIG. >> ' + CONFIG)
 
     LOGGER1.warning('RFSniffer has started >> ')
+ ################Update entry for RFSniffer################
+    LOGGER.info('Update entry for RFSniffer in db')
+
+    UPDATE_ENTRY = "UPDATE status SET isrunning=1 WHERE name='RFSniffer'"
+    LOGGER.debug(UPDATE_ENTRY)
+
+    ml.db_execquery(UPDATE_ENTRY)
+    LOGGER.info('executed')
+################Update entry for RFSniffer################
 
     CAL_TEMP = ""  # testing
 
@@ -91,8 +100,8 @@ try:
                     # Query to check whether a give table
                     #-----------------------------To Check Table Exists new logic--------------------------------------#
                     LOGGER.debug('TABLE_SQL')
-                    TABLE_SQL = "SELECT COUNT(NAME) FROM sqlite_master WHERE type='table' AND "
-                    TABLE_SQL = TABLE_SQL + "NAME='room" + ROOM_NO + "_log';"
+                    TABLE_SQL = "SELECT COUNT(name) FROM sqlite_master WHERE type='table' AND "
+                    TABLE_SQL = TABLE_SQL + "name='room" + ROOM_NO + "_log';"
                     LOGGER.debug(TABLE_SQL)
 
                     COUNT = ml.db_fetchone(TABLE_SQL)
@@ -114,7 +123,7 @@ try:
                         #######################Insert entry in table Rooms#####
                         LOGGER.info('new entry in rooms : INSERT_ENTRY')
 
-                        INSERT_ENTRY = "insert into rooms (room ,NAME ,alias ,isactive ,islog ,inserted_date ,updated_date) values ("
+                        INSERT_ENTRY = "INSERT INTO rooms (room ,NAME ,alias ,isactive ,islog ,inserted_date ,updated_date) VALUES ("
                         INSERT_ENTRY = INSERT_ENTRY + ROOM_NO + ",'room" + ROOM_NO + "','room" + \
                             ROOM_NO + \
                             "',1,1,datetime('now', 'localtime'),datetime('now', 'localtime'));"
@@ -131,7 +140,7 @@ try:
                         print '*--------*Motion Detection*--------*'
                         LOGGER2.info('CHECK_SQL')
                         # Query to check whether a record
-                        CHECK_SQL = "SELECT EXISTS (select * from motion WHERE "
+                        CHECK_SQL = "SELECT EXISTS (SELECT * FROM motion WHERE "
                         CHECK_SQL = CHECK_SQL + "userid=" + USER_ID + " AND room=" + \
                             ROOM_NO + " AND type=" + D_TYPE + " AND NO=" + NO + ");"
                         LOGGER2.debug(CHECK_SQL)
@@ -145,7 +154,7 @@ try:
 
                             if STATUS_CODE == "10":
                                 LOGGER2.info('DETECTION_OFF')
-                                DETECTION_OFF = "update motion set "
+                                DETECTION_OFF = "UPDATE motion SET "
                                 DETECTION_OFF = DETECTION_OFF + "status =" + STATUS_CODE + \
                                     " , updated_date = datetime('now', 'localtime') WHERE "
                                 DETECTION_OFF = DETECTION_OFF + "userid=" + USER_ID + " AND room=" + \
@@ -156,7 +165,7 @@ try:
                                 LOGGER2.info('executed')
                             elif STATUS_CODE == "11":
                                 LOGGER2.info('detectionon')
-                                DETECTION_OFF = "update motion set "
+                                DETECTION_OFF = "UPDATE motion SET "
                                 DETECTION_OFF = DETECTION_OFF + "status =" + STATUS_CODE + \
                                     " , updated_date = datetime('now', 'localtime') WHERE "
                                 DETECTION_OFF = DETECTION_OFF + "userid=" + USER_ID + " AND room=" + \
@@ -167,7 +176,7 @@ try:
                                 LOGGER2.info('executed')
                             elif STATUS_CODE == "13":
                                 LOGGER2.info('NO_MORE_DETECTION')
-                                NO_MORE_DETECTION = "update motion set "
+                                NO_MORE_DETECTION = "UPDATE motion SET "
                                 NO_MORE_DETECTION = NO_MORE_DETECTION + "status =" + STATUS_CODE + \
                                     " , updated_date = datetime('now', 'localtime') WHERE "
                                 NO_MORE_DETECTION = NO_MORE_DETECTION + "userid=" + USER_ID + " AND room=" + \
@@ -181,7 +190,7 @@ try:
                                 LOGGER2.info('CHECK_RUNNING')
 
                                 # Query to check whether a
-                                CHECK_RUNNING = "SELECT EXISTS (select * from motion WHERE "
+                                CHECK_RUNNING = "SELECT EXISTS (SELECT * FROM motion WHERE "
                                 CHECK_RUNNING = CHECK_RUNNING + "userid=" + USER_ID + " AND room=" + ROOM_NO + \
                                     " AND type=" + D_TYPE + " AND NO=" + NO + "  AND isrunning = 1);"
                                 LOGGER2.debug(CHECK_RUNNING)
@@ -198,7 +207,7 @@ try:
 
                                     print 'UPDATE_RUNNING'
                                     LOGGER2.info('UPDATE_RUNNING')
-                                    UPDATE_RUNNING = "update motion set "
+                                    UPDATE_RUNNING = "UPDATE motion SET "
                                     UPDATE_RUNNING = UPDATE_RUNNING + \
                                         "status = 12 , updated_date = datetime('now', 'localtime') WHERE "
                                     UPDATE_RUNNING = UPDATE_RUNNING + "userid=" + USER_ID + " AND room=" + \
@@ -211,7 +220,7 @@ try:
                                     print 'INSERT_RUNNING'
                                     LOGGER2.info('INSERT_RUNNING')
                                     #######################Update Query########
-                                    INSERT_RUNNING = "update motion set "
+                                    INSERT_RUNNING = "UPDATE motion SET "
                                     INSERT_RUNNING = INSERT_RUNNING + "status =" + STATUS_CODE + \
                                         " , isrunning = 1, start_date = datetime('now', 'localtime'), updated_date = datetime('now', 'localtime') WHERE "
                                     INSERT_RUNNING = INSERT_RUNNING + "userid=" + USER_ID + " AND room=" + \
@@ -230,7 +239,7 @@ try:
                         else:  # record does not exists go with insertion
                             LOGGER.info('INSERT_SQL')
                             #######################Insert Query################
-                            INSERT_SQL = "insert into motion (userid, room, type, NO, status, inserted_date, updated_date) values ("
+                            INSERT_SQL = "INSERT INTO motion (userid, room, type, NO, status, inserted_date, updated_date) VALUES ("
                             INSERT_SQL = INSERT_SQL + USER_ID + "," + ROOM_NO + "," + D_TYPE + "," + NO + "," + \
                                 STATUS_CODE + \
                                 ",datetime('now', 'localtime'),datetime('now', 'localtime'));"
@@ -249,7 +258,7 @@ try:
 
                         LOGGER.info('CHECK_ROOM_TEMP')
                         # Query to check whether a record
-                        CHECK_ROOM_TEMP = "SELECT EXISTS (select * from temps WHERE roomno=" + \
+                        CHECK_ROOM_TEMP = "SELECT EXISTS (SELECT * FROM temps WHERE roomno=" + \
                             ROOM_NO + " );"
                         LOGGER.debug(CHECK_ROOM_TEMP)
 
@@ -260,7 +269,7 @@ try:
                         if COUNT == 1:  # record already exists go with updation
                             LOGGER.info('UPDATE_ROOM_TEMP')
 
-                            UPDATE_ROOM_TEMP = "update temps set "
+                            UPDATE_ROOM_TEMP = "UPDATE temps SET "
                             UPDATE_ROOM_TEMP = UPDATE_ROOM_TEMP + "temp =" + CAL_TEMP + \
                                 " , timestamp = datetime('now', 'localtime') WHERE "
                             UPDATE_ROOM_TEMP = UPDATE_ROOM_TEMP + " roomno=" + ROOM_NO + " ;"
@@ -271,7 +280,7 @@ try:
                         else:
                             LOGGER.info('INSERT_ROOM_TEMP')
 
-                            INSERT_ROOM_TEMP = "insert into temps (roomno, temp,timestamp) values ("
+                            INSERT_ROOM_TEMP = "INSERT INTO temps (roomno, temp,timestamp) VALUES ("
                             INSERT_ROOM_TEMP = INSERT_ROOM_TEMP + ROOM_NO + "," + \
                                 CAL_TEMP + ",datetime('now', 'localtime'));"
                             LOGGER.debug(INSERT_ROOM_TEMP)
@@ -287,7 +296,7 @@ try:
 
                         LOGGER.info('CHECK_ROOM_HUMI')
                         # Query to check whether a record
-                        CHECK_ROOM_HUMI = "SELECT EXISTS (select * from humis WHERE roomno=" + \
+                        CHECK_ROOM_HUMI = "SELECT EXISTS (SELECT * FROM humis WHERE roomno=" + \
                             ROOM_NO + " );"
                         LOGGER.debug(CHECK_ROOM_HUMI)
 
@@ -298,7 +307,7 @@ try:
                         if COUNT == 1:  # record already exists go with updation
                             LOGGER.info('UPDATE_ROOM_HUMI')
 
-                            UPDATE_ROOM_HUMI = "update humis set "
+                            UPDATE_ROOM_HUMI = "UPDATE humis SET "
                             UPDATE_ROOM_HUMI = UPDATE_ROOM_HUMI + "humi =" + CAL_HUMI + \
                                 " , timestamp = datetime('now', 'localtime') WHERE "
                             UPDATE_ROOM_HUMI = UPDATE_ROOM_HUMI + " roomno=" + ROOM_NO + " ;"
@@ -309,7 +318,7 @@ try:
                         else:
                             LOGGER.info('INSERT_ROOM_HUMI')
 
-                            INSERT_ROOM_HUMI = "insert into humis (roomno, humi,timestamp) values ("
+                            INSERT_ROOM_HUMI = "INSERT INTO humis (roomno, humi,timestamp) VALUES ("
                             INSERT_ROOM_HUMI = INSERT_ROOM_HUMI + ROOM_NO + "," + \
                                 CAL_HUMI + ",datetime('now', 'localtime'));"
                             LOGGER.debug(INSERT_ROOM_HUMI)
@@ -412,8 +421,8 @@ try:
 
                             LOGGER.info('INSERT_LOG')
                             #######################Insert Log##################
-                            INSERT_LOG = "insert into room" + ROOM_NO + \
-                                "_log (userid, room, type, NO, status,inserted_date) values ("
+                            INSERT_LOG = "INSERT INTO room" + ROOM_NO + \
+                                "_log (userid, room, type, NO, status,inserted_date) VALUES ("
                             INSERT_LOG = INSERT_LOG + USER_ID + "," + ROOM_NO + "," + D_TYPE + \
                                 "," + NO + "," + STATUS_CODE + \
                                 ",datetime('now', 'localtime'));"
@@ -425,7 +434,7 @@ try:
                             LOGGER.info(
                                 'trigger update from device : INSERT_SQL')
                             #######################Insert Query################
-                            INSERT_SQL = "insert into devicestat (userid, room, type, NO, status,updated_date) values ("
+                            INSERT_SQL = "INSERT INTO devicestat (userid, room, type, NO, status,updated_date) VALUES ("
                             INSERT_SQL = INSERT_SQL + USER_ID + "," + ROOM_NO + "," + D_TYPE + \
                                 "," + NO + "," + STATUS_CODE + \
                                 ",datetime('now', 'localtime'));"
@@ -437,8 +446,8 @@ try:
 
                             LOGGER.info('INSERT_LOG')
                             #######################Insert Log##################
-                            INSERT_LOG = "insert into room" + ROOM_NO + \
-                                "_log (userid, room, type, NO, status,inserted_date) values ("
+                            INSERT_LOG = "INSERT INTO room" + ROOM_NO + \
+                                "_log (userid, room, type, NO, status,inserted_date) VALUES ("
                             INSERT_LOG = INSERT_LOG + USER_ID + "," + ROOM_NO + "," + D_TYPE + \
                                 "," + NO + "," + STATUS_CODE + \
                                 ",datetime('now', 'localtime'));"
@@ -467,3 +476,12 @@ try:
 except:
     LOGGER.exception("got error")
     LOGGER.critical('RFSniffer has stopped unexpectedly!!! <<')
+    ################Update entry for RFSniffer################
+    LOGGER.info('Update entry for RFSniffer in db')
+
+    UPDATE_ENTRY = "UPDATE status SET isrunning=0 WHERE name='RFSniffer'"
+    LOGGER.debug(UPDATE_ENTRY)
+
+    ml.db_execquery(UPDATE_ENTRY)
+    LOGGER.info('executed')
+    ################Update entry for RFSniffer################
